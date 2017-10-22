@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script data-require="jquery@2.1.1" data-semver="1.9.1" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+    </script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $('#get-data').click(function () {
+            var showData = $('#show-data');
+            var result = '';
+            var result1 = '';
+            $.getJSON('example.json', function (data) {
+                //console.log("data");
+                //console.log(data);
+                var coreSource = data.response;
+                var sentence = data.response.transcript.split('.');
+                //console.log(sentence);
+                var counter = 0;
+
+                for (var i = 0; i < sentence.length; i++) {
+                    var caption = sentence[i].trim();
+                    var lastcharacter = caption.split(' ').length;
+                    //console.log(i+1);
+
+                    //console.log(lastcharacter);
+                    //console.log(coreSource.alignment[counter].start);
+                    var starttime = srtTimestamp(coreSource.alignment[counter].start);
+                    counter = counter + lastcharacter;
+                    //console.log(coreSource.alignment[counter - 1].end);
+                    var endtime = srtTimestamp(coreSource.alignment[counter - 1].end);
+
+                    //console.log(starttime +'-->'+ endtime);
+                    //console.log(caption);
+                    result1+=i+1+"\r\n"+starttime +' --&gt; '+ endtime+"\r\n"+caption+"\r\n\r\n";
+                    result += i + 1 + "<br/>" + starttime + ' --&gt; ' + endtime + "<br/>" + caption +
+                        "<br/>";
+
+                }
+                //console.log(result);
+                console.log(result1);
+                showData.html(result1);
+            });
+
+            showData.text('Loading the JSON file.');
+        });
+
+        // Convert Milliseconds to SRT Format Time
+        function srtTimestamp(seconds) {
+            var $milliseconds = seconds * 1000;
+
+            $seconds = Math.floor($milliseconds / 1000);
+            $minutes = Math.floor($seconds / 60);
+            $hours = Math.floor($minutes / 60);
+            $milliseconds = $milliseconds % 1000;
+            $seconds = $seconds % 60;
+            $minutes = $minutes % 60;
+            return ($hours < 10 ? '0' : '') + $hours + ':' +
+                ($minutes < 10 ? '0' : '') + $minutes + ':' +
+                ($seconds < 10 ? '0' : '') + $seconds + ',' +
+                ($milliseconds < 100 ? '0' : '') + ($milliseconds < 10 ? '0' : '') + $milliseconds;
+        }
+    });
+
+    // Download Content
+    function download() {
+        alert("call");
+        var a = document.body.appendChild(
+            document.createElement("a")
+        );
+        a.download = "export.srt";
+        a.href = "data:text/html," + document.getElementById("show-data").innerHTML;
+        a.click();
+    }
+    </script>
+    <link rel="stylesheet" href="style.css" />
+    <!-- <script src="example.js"></script> -->
+    <style>body{ background: #F9F9FA; }</style>
+  </head>
+
+  <body>
+    <a href="#" id="get-data">Get SRT data</a>
+    <div id="show-data"></div>
+    <br/>
+    <button onClick="download()">Download</button>
+  </body>
+</html>
